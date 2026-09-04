@@ -27,6 +27,7 @@ function createServer() {
   if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
   const dataDir = process.env.DATA_DIR || __dirname;
   fs.mkdirSync(dataDir, { recursive: true });
+  if (process.env.NODE_ENV === 'production' && !process.env.DATA_DIR) console.warn('DATA_DIR is not set; SQLite users, preferences, eggs, and sessions will be lost on redeploy. Mount a Railway volume and set DATA_DIR.');
   app.use(
     session({
       secret: process.env.SESSION_SECRET || 'development-secret',

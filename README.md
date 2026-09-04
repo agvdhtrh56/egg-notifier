@@ -44,7 +44,7 @@ ROBLOX_API_KEY=generate_a_long_random_value
 
 Set `DISCORD_REDIRECT_URI` to the same public URL shown by Railway, then add that URL under OAuth2 redirects in the Discord Developer Portal. Railway supplies `PORT` automatically; do not override it unless you have a specific reason.
 
-The volume is required because the app stores users, alerts, and sessions in SQLite. Without it, those records are lost whenever Railway redeploys the service.
+The volume is required because the app stores users, notification preferences, eggs, alerts, and sessions in SQLite. Without it, those records are lost whenever Railway redeploys the service. After adding the volume and `DATA_DIR=/app/data`, existing records remain available across deployments; do not change `SESSION_SECRET` or `DATA_DIR` after users begin saving preferences.
 
 The Roblox server script must send `POST /api/webhook/spawn` with the `x-api-key` header set to the same `ROBLOX_API_KEY` value. The JSON body must include `pet` and `egg`; `rarity`, `mutation`, and `biome` are optional.
 
