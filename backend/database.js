@@ -10,4 +10,10 @@ async function initDB() {
   return db;
 }
 function getDB() { return db; }
-module.exports = { initDB, getDB };
+async function getOrCreateUser(identifier) {
+  const discordId = /^\d{17,20}$/.test(identifier) ? identifier : `local:${identifier.toLowerCase()}`;
+  let user = await db.get('SELECT * FROM users WHERE discord_id = ?', discordId);
+  if (!user) { await db.run('INSERT INTO users (discord_id, username) VALUES (?, ?)', discordId, identifier); user = await db.get('SELECT * FROM users WHERE discord_id = ?', discordId); }
+  return user;
+}
+module.exports = { initDB, getDB, getOrCreateUser };

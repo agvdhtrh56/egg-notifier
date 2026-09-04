@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
 const { initDB } = require('./database');
 const { setupAuth, ensureAuth } = require('./auth');
@@ -14,7 +15,7 @@ function createServer() {
   const app = express();
   app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
   app.use(express.json());
-  app.use(session({ secret: process.env.SESSION_SECRET || 'development-secret', resave: false, saveUninitialized: false, cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 86400000 } }));
+  app.use(session({ secret: process.env.SESSION_SECRET || 'development-secret', resave: false, saveUninitialized: false, store: new SQLiteStore({ db: 'sessions.sqlite', dir: __dirname }), cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 86400000 } }));
   setupAuth(app);
   app.get('/api/health', (_, res) => res.json({ ok: true }));
   app.use('/api/auth', authRoutes);

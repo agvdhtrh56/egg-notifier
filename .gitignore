@@ -3,3 +3,4 @@ frontend/dist/
 .env
 *.db
 backend/db.sqlite
+backend/sessions.sqlite

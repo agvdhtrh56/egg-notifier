@@ -4,8 +4,8 @@ A Discord-integrated Roblox spawn notifier with a web dashboard.
 
 ## Setup
 
-1. Copy `backend/.env.example` to `backend/.env` and fill in the Discord application credentials and webhook URL.
-2. Set the Discord OAuth redirect URL to `http://localhost:5000/api/auth/discord/callback`.
+1. Copy `backend/.env.example` to `backend/.env` and fill in the Discord OAuth credentials, webhook URL, and session secret.
+2. In Discord Developer Portal, add `http://localhost:5000/api/auth/discord/callback` under OAuth2 redirects.
 3. Install dependencies:
 
 ```powershell
@@ -36,4 +36,4 @@ POST JSON to `http://localhost:5000/api/webhook/spawn`:
 }
 ```
 
-Users with matching saved preferences receive the Discord webhook notification. Matching alerts are stored in SQLite at `backend/db.sqlite`.
+The channel receives the notification directly. Matching alerts are stored in SQLite at `backend/db.sqlite`. OAuth supplies the verified numeric Discord ID used for real mentions.

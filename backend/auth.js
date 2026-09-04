@@ -14,8 +14,8 @@ function setupAuth(app) {
     try {
       const db = require('./database').getDB();
       const existing = await db.get('SELECT discord_id FROM users WHERE discord_id = ?', profile.id);
-      if (!existing) await db.run('INSERT INTO users (discord_id, username, avatar, access_token, refresh_token) VALUES (?, ?, ?, ?, ?)', profile.id, profile.username, profile.avatar, accessToken, refreshToken);
-      else await db.run('UPDATE users SET username = ?, avatar = ?, access_token = ?, refresh_token = ? WHERE discord_id = ?', profile.username, profile.avatar, accessToken, refreshToken, profile.id);
+      if (!existing) await db.run('INSERT INTO users (discord_id, username, avatar) VALUES (?, ?, ?)', profile.id, profile.username, profile.avatar);
+      else await db.run('UPDATE users SET username = ?, avatar = ? WHERE discord_id = ?', profile.username, profile.avatar, profile.id);
       done(null, await db.get('SELECT * FROM users WHERE discord_id = ?', profile.id));
     } catch (error) { done(error); }
   }));
