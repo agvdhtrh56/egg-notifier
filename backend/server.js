@@ -11,6 +11,7 @@ const { getDB } = require('./database');
 const authRoutes = require('./routes/auth');
 const preferenceRoutes = require('./routes/preferences');
 const webhookRoutes = require('./routes/webhook');
+const eggRoutes = require('./routes/eggs');
 
 function createServer() {
   const app = express();
@@ -50,6 +51,8 @@ function createServer() {
 
   // User preferences (protected)
   app.use('/api/preferences', preferenceRoutes);
+  app.use('/api/eggs', eggRoutes);
+  app.use('/api/egg', eggRoutes);
 
   // Activity feed (protected)
   app.get('/api/activity', ensureAuth, async (req, res) => {

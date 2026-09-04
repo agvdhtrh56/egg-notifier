@@ -12,6 +12,7 @@ export default function App() {
   const [page, setPage] = useState(window.location.pathname === '/activity' ? 'activity' : 'preferences');
   const [preferences, setPreferences] = useState({ eggs: [], pets: [], rarities: [], mutations: [], notifications: true });
   const [activity, setActivity] = useState([]);
+  const [eggs, setEggs] = useState([]);
 
   useEffect(() => {
     fetch(`${API}/auth/me`, { credentials: 'include' })
@@ -25,10 +26,12 @@ export default function App() {
     if (!user) return;
     Promise.all([
       fetch(`${API}/preferences`, { credentials: 'include' }),
-      fetch(`${API}/activity`, { credentials: 'include' })
-    ]).then(async ([prefs, events]) => {
+      fetch(`${API}/activity`, { credentials: 'include' }),
+      fetch(`${API}/eggs/latest`)
+    ]).then(async ([prefs, events, latestEggs]) => {
       if (prefs.ok) setPreferences((await prefs.json()).preferences);
       if (events.ok) setActivity(await events.json());
+      if (latestEggs.ok) setEggs(await latestEggs.json());
     });
   }, [user]);
 
@@ -54,5 +57,5 @@ export default function App() {
 
   if (loading) return <div className="loading-screen">Loading your coop...</div>;
   if (!user) return <Login />;
-  return <div className="app-shell"><Sidebar page={page} setPage={navigate} user={user} onLogout={logout} /><main className="main-content">{page === 'activity' ? <Activity activity={activity} /> : <Preferences preferences={preferences} onSave={savePreferences} />}</main></div>;
+  return <div className="app-shell"><Sidebar page={page} setPage={navigate} user={user} onLogout={logout} /><main className="main-content">{page === 'activity' ? <Activity activity={activity} eggs={eggs} /> : <Preferences preferences={preferences} onSave={savePreferences} />}</main></div>;
 }
