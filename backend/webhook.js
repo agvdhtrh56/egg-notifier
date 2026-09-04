@@ -12,7 +12,7 @@ const RARITY_COLORS = {
 
 async function sendDiscordNotification(user, data) {
     if (!process.env.DISCORD_WEBHOOK_URL) {
-        console.warn('DISCORD_WEBHOOK_URL not set. Skipping notification.');
+        console.warn('DISCORD_WEBHOOK_URL not set.');
         return;
     }
 
@@ -22,9 +22,9 @@ async function sendDiscordNotification(user, data) {
     const mentions = discordUsers.map((item) => `<@${item.discord_id}>`);
     const content = mentions.length ? `${mentions.join(' ')} - your egg just spawned!` : 'A matching egg spawned!';
     const embed = {
-        title: `Egg Spawned: ${pet}`,
+        title: `${egg} Spawned!`,
         color: RARITY_COLORS[rarity] || 0x9B59B6,
-        thumbnail: { url: 'https://cdn-icons-png.flaticon.com/512/4315/4315605.png' },
+        thumbnail: { url: 'https://www.bing.com/images/search?view=detailV2&ccid=qZd5Whwj&id=4F991A83925F3C71A775FEBCC538B91C858BEEC5&thid=OIP.qZd5WhwjcA3tKdVJeTxYVwHaHa&mediaurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.a997795a1c23700ded29d549793c5857%3frik%3dxe6LhRy5OMW8%252fg%26riu%3dhttp%253a%252f%252ficons.iconarchive.com%252ficons%252fgoogle%252fnoto-emoji-food-drink%252f1024%252f32390-egg-icon.png%26ehk%3diYh%252bC%252fovct80ZgumQbcyUvYbHBS6PlOvC%252bGJ7aNNja8%253d%26risl%3d%26pid%3dImgRaw%26r%3d0&exph=1024&expw=1024&q=egg+icon&mode=overlay&FORM=IQFRBA&ck=C10B74E9828C0E25C909150EEEF8D555&selectedIndex=0&idpp=serp' },
         fields: [
             { name: 'Pet', value: pet, inline: true },
             { name: 'Egg', value: egg, inline: true },
