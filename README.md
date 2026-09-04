@@ -22,6 +22,29 @@ npm.cmd run dev
 
 Open `http://localhost:5173` and choose **Continue with Discord**.
 
+## Deploy on Railway
+
+Deploy the repository as one Railway service. Railway will run the root `npm install` and `npm start` commands automatically.
+
+1. Create a Railway service from this repository.
+2. Add a Railway volume mounted at `/app/data`.
+3. Add these variables to the service:
+
+```dotenv
+NODE_ENV=production
+SESSION_SECRET=generate_a_long_random_value
+DISCORD_CLIENT_ID=your_discord_application_id
+DISCORD_CLIENT_SECRET=your_discord_oauth_client_secret
+DISCORD_REDIRECT_URI=https://your-railway-domain/api/auth/discord/callback
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your_webhook_id/your_webhook_token
+FRONTEND_URL=https://your-railway-domain
+DATA_DIR=/app/data
+```
+
+Set `DISCORD_REDIRECT_URI` to the same public URL shown by Railway, then add that URL under OAuth2 redirects in the Discord Developer Portal. Railway supplies `PORT` automatically; do not override it unless you have a specific reason.
+
+The volume is required because the app stores users, alerts, and sessions in SQLite. Without it, those records are lost whenever Railway redeploys the service.
+
 ## Spawn Webhook
 
 POST JSON to `http://localhost:5000/api/webhook/spawn`:

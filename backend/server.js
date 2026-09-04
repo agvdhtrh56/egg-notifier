@@ -4,6 +4,7 @@ const cors = require('cors');
 const session = require('express-session');
 const SQLiteStore = require('connect-sqlite3')(session);
 const path = require('path');
+const fs = require('fs');
 const { initDB } = require('./database');
 const { setupAuth, ensureAuth } = require('./auth');
 const { getDB } = require('./database');
@@ -13,8 +14,6 @@ const webhookRoutes = require('./routes/webhook');
 
 function createServer() {
   const app = express();
-
-  // CORS – allow both local dev and deployed frontend
   app.use(
     cors({
       origin: process.env.FRONTEND_URL || 'http://localhost:5173',
@@ -24,13 +23,15 @@ function createServer() {
 
   app.use(express.json());
 
-  // Session store using SQLite
+  if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
+  const dataDir = process.env.DATA_DIR || __dirname;
+  fs.mkdirSync(dataDir, { recursive: true });
   app.use(
     session({
       secret: process.env.SESSION_SECRET || 'development-secret',
       resave: false,
       saveUninitialized: false,
-      store: new SQLiteStore({ db: 'sessions.sqlite', dir: __dirname }),
+      store: new SQLiteStore({ db: 'sessions.sqlite', dir: dataDir }),
       cookie: {
         secure: process.env.NODE_ENV === 'production',
         maxAge: 86400000, // 1 day
@@ -38,7 +39,6 @@ function createServer() {
     })
   );
 
-  // Set up Passport + Discord OAuth2
   setupAuth(app);
 
   // Health check
@@ -94,23 +94,14 @@ function createServer() {
   return app;
 }
 
-// ---- ONLY start the server if this file is run directly ----
-if (require.main === module) {
-  initDB()
-    .then(() => {
-      const app = createServer();
-      const PORT = process.env.PORT || 5000;
-      app.listen(PORT, '0.0.0.0', () => {
-        console.log(`✅ Server running on port ${PORT}`);
-        console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
-      });
-    })
-    .catch((err) => {
-      console.error('❌ Failed to initialize database:');
-      console.error(err.message);
-      console.error(err.stack);
-      process.exit(1); // Important: exit with error so Railway logs it
-    });
+async function startServer() {
+  await initDB();
+  const port = process.env.PORT || 5000;
+  return createServer().listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
 }
 
-module.exports = { createServer };
+if (require.main === module) startServer();
+module.exports = { createServer, startServer };
