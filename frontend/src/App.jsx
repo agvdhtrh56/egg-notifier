@@ -4,7 +4,7 @@ import Login from './pages/Login';
 import Activity from './pages/Activity';
 import Preferences from './pages/Preferences';
 
-const API = '/api';
+const API = import.meta.env.VITE_API_URL || '/api';
 export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
