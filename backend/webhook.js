@@ -1,53 +1,48 @@
-const router = require("express").Router();
-const { sendDiscordNotification } = require("../webhook"); // adjust path to your helper
+const axios = require('axios');
 
-// In-memory database for demo – replace with actual DB (SQLite, PostgreSQL, etc.)
-// Structure: { discord_id: { eggs: [], rarities: [], mutations: [] } }
-let userPreferences = {};
+async function sendDiscordNotification(user, data) {
+    if (!process.env.DISCORD_WEBHOOK_URL) {
+        console.warn("⚠️ DISCORD_WEBHOOK_URL not set. Skipping notification.");
+        return;
+    }
 
-// For production, use a real database. This is just for testing.
-// You can load from a file or use SQLite.
+    const embed = {
+        title: 'New Spawn Detected!',
+        color: 0x9B59B6,
+        fields: [
+            { name: 'Pet', value: data.pet, inline: true },
+            { name: 'Egg', value: data.egg, inline: true },
+            { name: 'Rarity', value: data.rarity || 'Unknown', inline: true },
+            { name: 'Mutation', value: data.mutation || 'None', inline: true },
+            { name: 'Biome', value: data.biome || 'Unknown', inline: true }
+        ],
+        timestamp: new Date()
+    };
 
-router.post("/spawn", async (req, res) => {
+    const users = Array.isArray(user) ? user : user ? [user] : [];
+    const mentions = users.map((item) =>
+        /^\d{17,20}$/.test(item.discord_id)
+            ? `<@${item.discord_id}>`
+            : `@${item.username}`
+    );
+    const content = mentions.length
+        ? `${mentions.join(' ')} Your saved pet spawned!`
+        : 'A matching spawn was detected.';
+
     try {
-        const { pet, egg, rarity, mutation, biome, area } = req.body;
-        console.log("📥 Received spawn:", { pet, egg, rarity, mutation, biome, area });
-
-        // Find all users who want this egg, rarity, or mutation
-        const matchingUsers = [];
-        for (const [discordId, prefs] of Object.entries(userPreferences)) {
-            const { eggs = [], rarities = [], mutations = [] } = prefs;
-            const eggMatch = eggs.length === 0 || eggs.includes(egg);
-            const rarityMatch = rarities.length === 0 || rarities.includes(rarity);
-            const mutationMatch = mutations.length === 0 || mutations.includes(mutation);
-            if (eggMatch && rarityMatch && mutationMatch) {
-                matchingUsers.push({ discord_id: discordId, username: "User" }); // store username separately
+        await axios.post(process.env.DISCORD_WEBHOOK_URL, {
+            content,
+            embeds: [embed],
+            allowed_mentions: {
+                users: users
+                    .filter((item) => /^\d{17,20}$/.test(item.discord_id))
+                    .map((item) => item.discord_id)
             }
-        }
-
-        // Send Discord notifications
-        if (matchingUsers.length > 0) {
-            await sendDiscordNotification(matchingUsers, { pet, egg, rarity, mutation, biome });
-            console.log(`✅ Notified ${matchingUsers.length} users.`);
-        } else {
-            console.log("ℹ️ No users matched this spawn.");
-        }
-
-        res.json({ success: true, notified: matchingUsers.length });
+        });
+        console.log("✅ Discord notification sent.");
     } catch (error) {
-        console.error("❌ Error in /spawn:", error);
-        res.status(500).json({ success: false, error: error.message });
+        console.error("❌ Discord webhook error:", error.message);
     }
-});
+}
 
-// (Optional) Endpoint to set user preferences (for testing)
-router.post("/preferences", (req, res) => {
-    const { discord_id, eggs, rarities, mutations } = req.body;
-    if (!discord_id) {
-        return res.status(400).json({ success: false, error: "Missing discord_id" });
-    }
-    userPreferences[discord_id] = { eggs: eggs || [], rarities: rarities || [], mutations: mutations || [] };
-    res.json({ success: true });
-});
-
-module.exports = router;
+module.exports = { sendDiscordNotification };
