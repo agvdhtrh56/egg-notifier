@@ -39,11 +39,14 @@ DISCORD_REDIRECT_URI=https://your-railway-domain/api/auth/discord/callback
 DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/your_webhook_id/your_webhook_token
 FRONTEND_URL=https://your-vercel-domain
 DATA_DIR=/app/data
+ROBLOX_API_KEY=generate_a_long_random_value
 ```
 
 Set `DISCORD_REDIRECT_URI` to the same public URL shown by Railway, then add that URL under OAuth2 redirects in the Discord Developer Portal. Railway supplies `PORT` automatically; do not override it unless you have a specific reason.
 
 The volume is required because the app stores users, alerts, and sessions in SQLite. Without it, those records are lost whenever Railway redeploys the service.
+
+The Roblox server script must send `POST /api/webhook/spawn` with the `x-api-key` header set to the same `ROBLOX_API_KEY` value. The JSON body must include `pet` and `egg`; `rarity`, `mutation`, and `biome` are optional.
 
 ## Deploy the frontend on Vercel
 

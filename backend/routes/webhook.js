@@ -1,8 +1,15 @@
 const router = require('express').Router();
+const crypto = require('crypto');
 const { getDB } = require('../database');
 const { sendDiscordNotification } = require('../webhook');
 
 router.post('/spawn', async (req, res) => {
+	const configuredKey = process.env.ROBLOX_API_KEY;
+	if (configuredKey) {
+		const suppliedKey = req.get('x-api-key') || '';
+		const keysMatch = suppliedKey.length === configuredKey.length && crypto.timingSafeEqual(Buffer.from(suppliedKey), Buffer.from(configuredKey));
+		if (!keysMatch) return res.status(401).json({ error: 'Invalid API key' });
+	}
 	const { pet, egg, rarity, mutation, biome } = req.body;
 	if (!pet || !egg) return res.status(400).json({ error: 'Missing pet or egg' });
 	if (!process.env.DISCORD_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL.includes('your_webhook_')) return res.status(503).json({ error: 'DISCORD_WEBHOOK_URL is not configured' });
