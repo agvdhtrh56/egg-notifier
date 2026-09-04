@@ -34,6 +34,7 @@ function createServer() {
       store: new SQLiteStore({ db: 'sessions.sqlite', dir: dataDir }),
       cookie: {
         secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 86400000, // 1 day
       },
     })
